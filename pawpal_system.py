@@ -8,26 +8,75 @@ from typing import List
 
 
 # ---------------------------------------------------------------------------
-# Data classes
+# Task
 # ---------------------------------------------------------------------------
 
 @dataclass
-class Pet:
-    """Represents a pet with basic profile information."""
-    name: str
-    species: str  # e.g. "dog", "cat", "other"
-    age: int = 0
-    breed: str = ""
-
-
-@dataclass
 class Task:
-    """A single pet-care task (walk, feeding, meds, etc.)."""
+    """Represents a single pet-care activity."""
     title: str
     duration_minutes: int
     priority: str = "medium"  # "low", "medium", "high"
     category: str = "general"  # e.g. "walk", "feeding", "meds", "grooming", "enrichment"
-    pet_name: str = ""
+    completed: bool = False
+
+    def mark_complete(self) -> None:
+        """Mark this task as completed."""
+        self.completed = True
+
+    def mark_incomplete(self) -> None:
+        """Reset this task to incomplete."""
+        self.completed = False
+
+    def __str__(self) -> str:
+        """Return a readable string representation."""
+        status = "done" if self.completed else "pending"
+        return (f"{self.title} [{self.category}] — {self.duration_minutes} min, "
+                f"priority: {self.priority}, status: {status}")
+
+
+# ---------------------------------------------------------------------------
+# Pet
+# ---------------------------------------------------------------------------
+
+class Pet:
+    """Stores pet details and manages a list of tasks for this pet."""
+
+    def __init__(self, name: str, species: str, age: int = 0, breed: str = "") -> None:
+        self.name = name
+        self.species = species
+        self.age = age
+        self.breed = breed
+        self._tasks: List[Task] = []
+
+    def add_task(self, task: Task) -> None:
+        """Add a care task for this pet."""
+        self._tasks.append(task)
+
+    def remove_task(self, title: str) -> bool:
+        """Remove a task by title. Returns True if found and removed."""
+        for i, t in enumerate(self._tasks):
+            if t.title == title:
+                self._tasks.pop(i)
+                return True
+        return False
+
+    def get_tasks(self) -> List[Task]:
+        """Return all tasks assigned to this pet."""
+        return list(self._tasks)
+
+    def get_pending_tasks(self) -> List[Task]:
+        """Return only incomplete tasks."""
+        return [t for t in self._tasks if not t.completed]
+
+    @property
+    def task_count(self) -> int:
+        """Return the number of tasks for this pet."""
+        return len(self._tasks)
+
+    def __str__(self) -> str:
+        """Return a readable string representation."""
+        return f"{self.name} ({self.species}, age {self.age}) — {self.task_count} task(s)"
 
 
 # ---------------------------------------------------------------------------
@@ -35,7 +84,7 @@ class Task:
 # ---------------------------------------------------------------------------
 
 class Owner:
-    """Represents the pet owner, holds pets and preferences."""
+    """Manages multiple pets and provides access to all their tasks."""
 
     def __init__(self, name: str, available_time_minutes: int = 120,
                  preferences: List[str] | None = None) -> None:
@@ -59,6 +108,20 @@ class Owner:
     def get_pets(self) -> List[Pet]:
         """Return the list of owner's pets."""
         return list(self._pets)
+
+    def get_all_tasks(self) -> List[Task]:
+        """Retrieve every task across all pets."""
+        tasks: List[Task] = []
+        for pet in self._pets:
+            tasks.extend(pet.get_tasks())
+        return tasks
+
+    def get_all_pending_tasks(self) -> List[Task]:
+        """Retrieve only incomplete tasks across all pets."""
+        tasks: List[Task] = []
+        for pet in self._pets:
+            tasks.extend(pet.get_pending_tasks())
+        return tasks
 
 
 # ---------------------------------------------------------------------------
@@ -84,10 +147,7 @@ class DailyPlan:
 
         lines = [f"Daily Plan for {self.plan_date}:", ""]
         for idx, task in enumerate(self.scheduled_tasks, start=1):
-            lines.append(
-                f"  {idx}. {task.title} ({task.duration_minutes} min, "
-                f"priority: {task.priority}, category: {task.category})"
-            )
+            lines.append(f"  {idx}. {task}")
         lines.append("")
         lines.append(f"Total duration: {self.total_duration} minutes")
         return "\n".join(lines)
@@ -98,22 +158,26 @@ class DailyPlan:
 # ---------------------------------------------------------------------------
 
 class Scheduler:
-    """Generates a daily care plan based on tasks, time budget, and priorities."""
+    """The 'brain' that retrieves, organises, and schedules tasks across pets."""
 
     PRIORITY_WEIGHT = {"high": 3, "medium": 2, "low": 1}
 
-    def __init__(self, owner: Owner, tasks: List[Task] | None = None) -> None:
+    def __init__(self, owner: Owner) -> None:
         self.owner = owner
-        self.tasks: List[Task] = tasks or []
         self.time_budget: int = owner.available_time_minutes
+
+    def _collect_tasks(self) -> List[Task]:
+        """Pull all pending tasks from the owner's pets."""
+        return self.owner.get_all_pending_tasks()
 
     def generate_schedule(self) -> DailyPlan:
         """Build and return a DailyPlan respecting the time budget."""
         plan = DailyPlan(plan_date=str(date.today()))
+        tasks = self._collect_tasks()
 
-        # Sort tasks by priority (high first), then shortest duration for ties
+        # Sort by priority (high first), then shortest duration for ties
         sorted_tasks = sorted(
-            self.tasks,
+            tasks,
             key=lambda t: (-self.PRIORITY_WEIGHT.get(t.priority, 0), t.duration_minutes),
         )
 
@@ -130,6 +194,8 @@ class Scheduler:
         if not plan.scheduled_tasks:
             return "No tasks could fit within the available time budget."
 
+        all_tasks = self._collect_tasks()
+
         lines = ["Schedule explanation:", ""]
         lines.append(
             f"Time budget: {self.time_budget} minutes  |  "
@@ -141,10 +207,10 @@ class Scheduler:
                       "then by shortest duration to maximise the number of tasks that fit.")
         lines.append("")
 
-        skipped = [t for t in self.tasks if t not in plan.scheduled_tasks]
+        skipped = [t for t in all_tasks if t not in plan.scheduled_tasks]
         if skipped:
             lines.append("Skipped tasks (did not fit):")
             for t in skipped:
-                lines.append(f"  - {t.title} ({t.duration_minutes} min, {t.priority})")
+                lines.append(f"  - {t}")
 
         return "\n".join(lines)
