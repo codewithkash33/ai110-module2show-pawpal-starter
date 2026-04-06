@@ -49,13 +49,19 @@ After reviewing the initial skeleton with Copilot, one change was made:
 
 **a. Constraints and priorities**
 
-- What constraints does your scheduler consider (for example: time, priority, preferences)?
-- How did you decide which constraints mattered most?
+The scheduler considers three constraints when building a daily plan:
+
+1. **Time budget** — the owner's total available minutes per day. Tasks are only added if they fit within the remaining budget.
+2. **Priority** — tasks are sorted high → medium → low so the most important care activities are scheduled first.
+3. **Duration** — among tasks of equal priority, shorter tasks are scheduled first to maximise the number of tasks that fit.
+
+Time and priority were chosen as the primary constraints because a busy pet owner's biggest challenge is fitting essential tasks (meds, feeding) into a limited window before lower-priority activities (enrichment, grooming).
 
 **b. Tradeoffs**
 
-- Describe one tradeoff your scheduler makes.
-- Why is that tradeoff reasonable for this scenario?
+The conflict detection algorithm checks whether any task's time window overlaps with another's using start-time + duration arithmetic. However, it only flags overlaps among tasks that have a `scheduled_time` — **tasks without a time are silently ignored** and placed at the end of the sorted list.
+
+This tradeoff is reasonable because many pet-care tasks (e.g. "brush fur") don't need a specific time slot. Forcing the user to assign times to every task would add friction without improving the schedule. By checking only timed tasks, the system stays lightweight while still catching real conflicts like a vet visit overlapping with a morning walk.
 
 ---
 

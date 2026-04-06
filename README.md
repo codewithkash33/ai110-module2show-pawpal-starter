@@ -41,3 +41,13 @@ pip install -r requirements.txt
 5. Add tests to verify key behaviors.
 6. Connect your logic to the Streamlit UI in `app.py`.
 7. Refine UML so it matches what you actually built.
+
+## Smarter Scheduling
+
+The Scheduler class includes several algorithmic features beyond simple list management:
+
+- **Sort by time** — `sort_by_time()` orders tasks by their `HH:MM` scheduled time using a lambda key, placing unscheduled tasks at the end.
+- **Sort by priority** — `sort_by_priority()` ranks tasks high → medium → low, breaking ties by shortest duration.
+- **Filter by pet / status / category** — `filter_by_pet()`, `filter_by_status()`, and `filter_by_category()` let you slice the task list by any dimension.
+- **Recurring tasks** — Tasks with `frequency="daily"` or `"weekly"` automatically create a new pending occurrence when marked complete, using `timedelta` for date arithmetic.
+- **Conflict detection** — `detect_conflicts()` compares every pair of timed tasks and flags overlapping windows (start-time + duration overlap) with a warning message instead of crashing.
