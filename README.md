@@ -1,26 +1,29 @@
 # PawPal+ (Module 2 Project)
 
-You are building **PawPal+**, a Streamlit app that helps a pet owner plan care tasks for their pet.
+**PawPal+** is a Streamlit-powered pet care planning assistant that helps busy pet owners stay on top of daily care routines. It tracks tasks, considers constraints, and produces an optimised daily schedule with clear reasoning.
 
-## Scenario
+## Features
 
-A busy pet owner needs help staying consistent with pet care. They want an assistant that can:
+| Feature | Description |
+|---|---|
+| **Owner & Pet profiles** | Register an owner with a time budget and add multiple pets with species, age, and breed |
+| **Task management** | Add tasks with duration, priority, category, scheduled time, and frequency |
+| **Sort by time** | `sort_by_time()` orders tasks chronologically by `HH:MM`, placing unscheduled tasks last |
+| **Sort by priority** | `sort_by_priority()` ranks high → medium → low, breaking ties by shortest duration |
+| **Filter by pet / status / category** | Slice the task list on any dimension |
+| **Recurring tasks** | Daily and weekly tasks auto-create a new pending occurrence when completed |
+| **Conflict detection** | `detect_conflicts()` flags overlapping time windows with clear `st.warning` messages |
+| **Smart scheduling** | Greedy algorithm fills a time budget starting with highest-priority, shortest tasks |
+| **Plan explanation** | Every schedule includes a breakdown of why tasks were chosen, and which were skipped |
+| **Task completion** | Mark tasks complete from the UI; recurring tasks automatically regenerate |
 
-- Track pet care tasks (walks, feeding, meds, enrichment, grooming, etc.)
-- Consider constraints (time available, priority, owner preferences)
-- Produce a daily plan and explain why it chose that plan
+## System Architecture
 
-Your job is to design the system first (UML), then implement the logic in Python, then connect it to the Streamlit UI.
+The final UML class diagram:
 
-## What you will build
+![PawPal+ UML](uml_final.png)
 
-Your final app should:
-
-- Let a user enter basic owner + pet info
-- Let a user add/edit tasks (duration + priority at minimum)
-- Generate a daily schedule/plan based on constraints and priorities
-- Display the plan clearly (and ideally explain the reasoning)
-- Include tests for the most important scheduling behaviors
+The Mermaid source is in [`uml_final.mmd`](uml_final.mmd).
 
 ## Getting started
 
@@ -30,6 +33,12 @@ Your final app should:
 python -m venv .venv
 source .venv/bin/activate  # Windows: .venv\Scripts\activate
 pip install -r requirements.txt
+```
+
+### Run the app
+
+```bash
+streamlit run app.py
 ```
 
 ### Suggested workflow

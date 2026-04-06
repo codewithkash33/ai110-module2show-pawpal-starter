@@ -1,0 +1,72 @@
+classDiagram
+    class Task {
+        +str title
+        +int duration_minutes
+        +str priority
+        +str category
+        +str scheduled_time
+        +str frequency
+        +bool completed
+        +str pet_name
+        +mark_complete() Task|None
+        +mark_incomplete()
+        -_create_next_occurrence() Task
+        +_time_sort_key tuple
+        +__str__() str
+    }
+
+    class Pet {
+        +str name
+        +str species
+        +int age
+        +str breed
+        -List~Task~ _tasks
+        +add_task(task: Task)
+        +remove_task(title: str) bool
+        +complete_task(title: str) str|None
+        +get_tasks() List~Task~
+        +get_pending_tasks() List~Task~
+        +task_count int
+        +__str__() str
+    }
+
+    class Owner {
+        +str name
+        +int available_time_minutes
+        +List~str~ preferences
+        -List~Pet~ _pets
+        +add_pet(pet: Pet)
+        +remove_pet(pet_name: str) bool
+        +get_pets() List~Pet~
+        +get_all_tasks() List~Task~
+        +get_all_pending_tasks() List~Task~
+    }
+
+    class DailyPlan {
+        +str plan_date
+        +List~Task~ scheduled_tasks
+        +int total_duration
+        +add_task(task: Task)
+        +get_explanation() str
+    }
+
+    class Scheduler {
+        +Owner owner
+        +int time_budget
+        -_collect_tasks() List~Task~
+        +sort_by_time(tasks?) List~Task~
+        +sort_by_priority(tasks?) List~Task~
+        +filter_by_status(completed, tasks?) List~Task~
+        +filter_by_pet(pet_name, tasks?) List~Task~
+        +filter_by_category(category, tasks?) List~Task~
+        +detect_conflicts(tasks?) List~str~
+        +generate_schedule() DailyPlan
+        +explain_plan(plan: DailyPlan) str
+    }
+
+    Owner "1" --> "*" Pet : owns
+    Pet "1" --> "*" Task : has tasks
+    Scheduler --> Owner : reads from
+    Scheduler --> DailyPlan : produces
+    DailyPlan --> "*" Task : contains
+    Task ..> Task : creates next (recurring)

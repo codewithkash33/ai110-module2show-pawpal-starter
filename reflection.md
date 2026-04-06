@@ -69,13 +69,18 @@ This tradeoff is reasonable because many pet-care tasks (e.g. "brush fur") don't
 
 **a. How you used AI**
 
-- How did you use AI tools during this project (for example: design brainstorming, debugging, refactoring)?
-- What kinds of prompts or questions were most helpful?
+Copilot was used at every phase of the project:
+
+- **Design brainstorming** — I described the PawPal+ scenario and asked Copilot to help identify core actions, building blocks, and relationships. It generated the initial UML diagram and class skeletons.
+- **Implementation** — Copilot helped flesh out dataclass fields, write the greedy scheduling algorithm, and implement conflict detection logic.
+- **Testing** — I prompted Copilot to generate a test suite covering happy paths and edge cases, then reviewed each test for correctness.
+- **Refactoring** — After Phase 4 added recurring tasks and conflict detection, I used Copilot to update the Streamlit UI to expose sorting, filtering, and conflict warnings.
+
+The most effective prompts were specific, phase-scoped requests like "implement `detect_conflicts()` that checks pairwise time overlaps" rather than broad instructions. Breaking work into separate chat sessions per phase kept each conversation focused and reduced hallucination.
 
 **b. Judgment and verification**
 
-- Describe one moment where you did not accept an AI suggestion as-is.
-- How did you evaluate or verify what the AI suggested?
+When Copilot first generated the `detect_conflicts()` method, it compared `scheduled_time` strings directly (e.g. `"08:00" < "09:00"`) without accounting for task duration — so two tasks at 08:00 and 08:15 would not be flagged even if the first lasted 30 minutes. I rejected that approach and asked for a version that converts times to minutes-since-midnight, adds duration, and checks whether the windows overlap. The corrected algorithm catches all partial-overlap cases, which I verified by writing five dedicated conflict-detection tests.
 
 ---
 
@@ -112,12 +117,16 @@ The scheduler works correctly for all tested scenarios. Edge cases I would test 
 
 **a. What went well**
 
-- What part of this project are you most satisfied with?
+I am most satisfied with the **algorithmic layer** — sorting, filtering, conflict detection, and recurring tasks. These features turned PawPal+ from a simple to-do list into a genuine scheduling assistant. The conflict-detection algorithm in particular was rewarding to design and test because it required reasoning about time arithmetic and pairwise comparisons.
 
 **b. What you would improve**
 
-- If you had another iteration, what would you improve or redesign?
+With another iteration I would:
+
+1. **Persist data** — replace `st.session_state` with a SQLite or JSON backend so schedules survive page reloads.
+2. **Input validation** — enforce `HH:MM` format for `scheduled_time` and reject invalid values ("25:99") at the boundary instead of silently sorting them wrong.
+3. **Drag-and-drop UI** — let users reorder tasks visually instead of relying solely on algorithmic sorting.
 
 **c. Key takeaway**
 
-- What is one important thing you learned about designing systems or working with AI on this project?
+The most important lesson was that **I stay the architect even when AI writes most of the code**. Copilot is excellent at generating boilerplate and proposing algorithms, but every suggestion needs to be evaluated against the system's constraints. The conflict-detection bug I caught (string comparison instead of duration-aware overlap) would have shipped silently without review. Designing the UML first gave me a mental model to judge every AI output against, which made the collaboration productive rather than passive.
