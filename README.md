@@ -51,3 +51,26 @@ The Scheduler class includes several algorithmic features beyond simple list man
 - **Filter by pet / status / category** — `filter_by_pet()`, `filter_by_status()`, and `filter_by_category()` let you slice the task list by any dimension.
 - **Recurring tasks** — Tasks with `frequency="daily"` or `"weekly"` automatically create a new pending occurrence when marked complete, using `timedelta` for date arithmetic.
 - **Conflict detection** — `detect_conflicts()` compares every pair of timed tasks and flags overlapping windows (start-time + duration overlap) with a warning message instead of crashing.
+
+## Testing PawPal+
+
+Run the automated test suite:
+
+```bash
+python -m pytest tests/ -v
+```
+
+The test suite includes **41 tests** across 8 categories:
+
+| Category | Tests | What it verifies |
+|---|---|---|
+| Task basics | 3 | Completion, reset, string output |
+| Pet management | 6 | Add/remove tasks, pet_name tagging, empty pet, pending filter |
+| Owner aggregation | 4 | Multi-pet tasks, no-pets, pending-only, remove pet |
+| Sorting | 5 | Chronological order, unscheduled-last, same-hour ties, priority + duration |
+| Filtering | 4 | By pet, by status, by category, no-match |
+| Recurring tasks | 5 | Daily, weekly, attribute preservation, one-time, double-complete |
+| Conflict detection | 5 | Exact overlap, partial overlap, no overlap, cross-pet, unscheduled |
+| Schedule edge cases | 9 | Budget, priority, empty/zero/exceeded, all-completed, plan explanation |
+
+**Confidence level: ⭐⭐⭐⭐ (4/5)** — all happy paths and key edge cases are covered.

@@ -83,13 +83,28 @@ This tradeoff is reasonable because many pet-care tasks (e.g. "brush fur") don't
 
 **a. What you tested**
 
-- What behaviors did you test?
-- Why were these tests important?
+The test suite (41 tests) covers eight categories of behaviour:
+
+1. **Task basics** — marking complete/incomplete, string representation
+2. **Pet management** — add/remove tasks, auto-tagging pet_name, empty-pet edge case, pending-only filtering
+3. **Owner aggregation** — multi-pet task collection, no-pets edge case, removing pets
+4. **Sorting** — chronological order (HH:MM), unscheduled-last, same-hour ties, priority ordering with duration tiebreak
+5. **Filtering** — by pet name (including no-match), by completion status, by category
+6. **Recurring tasks** — daily and weekly auto-creation, attribute preservation, one-time no-recurrence, double-complete idempotency
+7. **Conflict detection** — exact overlap, partial overlap, no overlap, cross-pet conflicts, unscheduled tasks ignored
+8. **Schedule generation edge cases** — time budget enforcement, priority ordering, empty task list, no pets, zero budget, single task exceeding budget, all tasks completed, DailyPlan explanation output
+
+These tests are important because they verify both the "happy path" (normal usage) and critical edge cases (empty data, zero budget, already-completed tasks) that could silently break the scheduler.
 
 **b. Confidence**
 
-- How confident are you that your scheduler works correctly?
-- What edge cases would you test next if you had more time?
+Confidence level: ⭐⭐⭐⭐ (4/5)
+
+The scheduler works correctly for all tested scenarios. Edge cases I would test next with more time:
+- Tasks with invalid scheduled_time formats (e.g. "25:99", "abc")
+- Very large task lists (performance / stress testing)
+- Concurrent recurring tasks where multiple daily tasks complete simultaneously
+- Boundary condition: a task whose duration exactly equals the remaining budget
 
 ---
 
